@@ -1,0 +1,17 @@
+
+.cell {
+  width: 50px;
+  height: 50px;
+  display: inline-block;
+  background-color: beige;
+  outline: solid 1px #777;
+}
+
+.cell:hover {
+  cursor: pointer;
+}
+
+.goal {
+  background-color: yellow;
+}
+
