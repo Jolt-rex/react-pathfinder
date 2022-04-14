@@ -4,8 +4,8 @@ import './pathfinder.css';
 
 function Pathfinder({ width, height }) {
   const [grid, setGrid] = useState([]);
-  const [start, setStart] = useState({});
-  const [goal, setGoal] = useState({});
+  const [start, setStart] = useState(null);
+  const [goal, setGoal] = useState(null);
   const [action, setAction] = useState('');
   
   useEffect(() => {
@@ -29,14 +29,16 @@ function Pathfinder({ width, height }) {
   function onHandleCellClick(row, col) {
     const newGrid = [...grid];
     newGrid[row][col].status = action;
+
+    console.log(action, row, col);
     
     if (action === 'goal') {
-      newGrid[goal.row][goal.col].status = 'empty';
+      if(goal) newGrid[goal.row][goal.col].status = 'empty';
       setGoal({ row, col });
     }
 
     if (action === 'start') {
-      newGrid[start.row][start.col].status = 'empty';
+      if(start) newGrid[start.row][start.col].status = 'empty';
       setStart({ row, col });
     }
     
@@ -46,7 +48,7 @@ function Pathfinder({ width, height }) {
   return ( 
     <div className='pathfinder-container'>
       <p>Our grid is set to size of {grid.length}</p>
-      <p>The goal is at row {goal.row} column {goal.col}</p>
+      {goal && <p>The goal is at row {goal.row} column {goal.col}</p>}
       <p>Current action is {action}</p>
       <div className="grid">
         <button className='btn btn-primary' onClick={() => setAction('start')}>Set Start</button>
