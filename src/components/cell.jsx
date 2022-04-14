@@ -5,8 +5,7 @@ import RocketSVG from '../assets/rocket.svg';
 
 const Cell = ({ status, row, col, onHandleClick }) => {
 
-  function handleClick({ target }) {
-    console.log(row, col);
+  function handleClick() {
     onHandleClick(row, col);
   }
 
