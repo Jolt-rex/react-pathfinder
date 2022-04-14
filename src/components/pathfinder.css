@@ -2,3 +2,7 @@
 .grid {
   display: inline-block;
 }
+
+button {
+  margin: 1em;
+}

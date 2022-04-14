@@ -1,17 +1,19 @@
 
 .cell {
-  width: 50px;
-  height: 50px;
-  display: inline-block;
+  height: 24px;
+  width: 24px;
   background-color: beige;
   outline: solid 1px #777;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cell:hover {
   cursor: pointer;
 }
 
-.goal {
-  background-color: yellow;
+.cell img {
+  height: 20px;
+  width: 20px;
 }
-

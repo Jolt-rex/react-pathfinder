@@ -2,19 +2,20 @@ import React, { useState, useEffect } from 'react';
 import Cell from './cell';
 import './pathfinder.css';
 
-function Pathfinder({ gridSize }) {
+function Pathfinder({ width, height }) {
   const [grid, setGrid] = useState([]);
   const [start, setStart] = useState({});
   const [goal, setGoal] = useState({});
+  const [action, setAction] = useState('');
   
   useEffect(() => {
     console.log('Use effect called');
     
-    const newGrid = Array(gridSize).fill(0).map(row => new Array(gridSize).fill({}));
+    const newGrid = Array(height).fill(0).map(row => new Array(width).fill({}));
 
     // Fill the new grid with row and col co-ordinates
-    for (let row = 0; row < gridSize; row++) {
-      for (let col = 0; col < gridSize; col++) {
+    for (let row = 0; row < height; row++) {
+      for (let col = 0; col < width; col++) {
         newGrid[row][col] = { status: 'empty', row, col };
       }
     }
@@ -28,28 +29,34 @@ function Pathfinder({ gridSize }) {
     return 'empty';
   }
 
-  function onHandleCellClick(cell) {
-    const row = parseInt(cell.getAttribute('row'));
-    const col = parseInt(cell.getAttribute('col'));
+  function onHandleCellClick(row, col) {
+    console.log(row, col);
 
     const newGrid = [...grid];
-    newGrid[row][col].status = 'goal';
-
+    newGrid[row][col].status = action;
+    
     setGrid(newGrid);
-    setGoal({ row, col });
+
+    if (action === 'goal') setGoal({ row, col });
+    if (action === 'start') setStart({ row, col });
   }
 
   return ( 
-    <div className="grid">
+    <div className='pathfinder-container'>
       <p>Our grid is set to size of {grid.length}</p>
       <p>The goal is at row {goal.row} column {goal.col}</p>
-      {grid !== [] &&
-        grid.map(row => {
-          return <div key={row[0].row} className="row">
-            {row.map(({ row, col }) => <Cell key={"" + row + col} status={getCellStatus(row, col)} row={row} col={col} onHandleClick={onHandleCellClick} />)}
-          </div>
-        })
-      }
+      <p>Current action is {action}</p>
+      <div className="grid">
+        <button className='btn btn-warning' onClick={() => setAction('start')}>Set Start</button>
+        <button className='btn btn-warning' onClick={() => setAction('goal')}>Set Goal</button>
+            {grid !== [] &&
+              grid.map(row => {
+                return <div key={row[0].row} className="row">
+                  {row.map(({ row, col }) => <Cell key={"" + row + col} status={getCellStatus(row, col)} row={row} col={col} onHandleClick={onHandleCellClick} />)}
+                </div>
+              })
+            }
+      </div>
     </div>
   );
 }

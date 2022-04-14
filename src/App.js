@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="App">
       <h1 className="heading">Pathfinder</h1>
-      <Pathfinder gridSize={10} />
+      <Pathfinder height={15} width={30} />
     </div>
   );
 }
