@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import Cell from './cell';
+import Dropdown from './dropdown';
 import './pathfinder.css';
 
 function Pathfinder({ width, height }) {
   const [grid, setGrid] = useState([]);
   const [start, setStart] = useState(null);
   const [goal, setGoal] = useState(null);
+  const [algorithm, setAlgorithm] = useState(null);
   const [action, setAction] = useState('');
+
   
   useEffect(() => {
     console.log('Use effect called');
@@ -23,6 +26,9 @@ function Pathfinder({ width, height }) {
       }
     }
 
+    setStart(null);
+    setGoal(null);
+    setAlgorithm(null);
     setGrid(newGrid);
   }
 
@@ -63,16 +69,19 @@ function Pathfinder({ width, height }) {
     setGrid(newGrid);
   }
 
+  function execute() {
+    console.log('Executing');
+  }
+
   return ( 
     <div className='pathfinder-container'>
-      <p>Our grid is set to size of {grid.length}</p>
-      {goal && <p>The goal is at row {goal.row} column {goal.col}</p>}
-      <p>Current action is {action}</p>
       <div className="grid">
         <button className='btn btn-primary' onClick={() => setAction('start')}>Set Start</button>
         <button className='btn btn-primary' onClick={() => setAction('goal')}>Set Goal</button>
         <button className='btn btn-primary' onClick={() => setAction('block')}>Set Block</button>
-        <button className='btn btn-warning' onClick={() => resetGrid()}>Reset</button>
+        <Dropdown label={algorithm ? algorithm.label : 'Algorithm'} handleClick={(algo) => setAlgorithm(algo)}/>
+        <button className='btn btn-warning' onClick={resetGrid}>Reset</button>
+        <button className={'btn btn-success' + (start && goal && algorithm ? '' : ' disabled')} onClick={execute}>Execute</button>
             {grid !== [] &&
               grid.map(row => {
                 return <div key={row[0].row} className="row">
