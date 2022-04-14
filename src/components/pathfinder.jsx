@@ -26,22 +26,40 @@ function Pathfinder({ width, height }) {
     setGrid(newGrid);
   }
 
+
+  // TODO make this cleaner - extract duplicate code to re-useable function
   function onHandleCellClick(row, col) {
     const newGrid = [...grid];
     newGrid[row][col].status = action;
-
-    console.log(action, row, col);
     
     if (action === 'goal') {
-      if(goal) newGrid[goal.row][goal.col].status = 'empty';
+      // if goal already declared, and is at same location, exit early
+      if (goal && goal.row === row && goal.col === col) return;
+
+      // if goal declared, erase previous goal position
+      if (goal) newGrid[goal.row][goal.col].status = 'empty';
+      
       setGoal({ row, col });
     }
 
     if (action === 'start') {
-      if(start) newGrid[start.row][start.col].status = 'empty';
+      // if start already declared, and is at same location, exit early
+      if (start && start.row === row && start.col === col) return;
+
+      // if start declared, erase previous start position
+      if (start) newGrid[start.row][start.col].status = 'empty';
+      
       setStart({ row, col });
     }
     
+    setGrid(newGrid);
+  }
+
+  function onHandleMouseOver(row, col) {
+    if (action !== 'block') return;
+
+    const newGrid = [...grid];
+    newGrid[row][col].status = action;
     setGrid(newGrid);
   }
 
@@ -58,7 +76,7 @@ function Pathfinder({ width, height }) {
             {grid !== [] &&
               grid.map(row => {
                 return <div key={row[0].row} className="row">
-                  {row.map(({ status, row, col }) => <Cell key={"" + row + col} status={status} row={row} col={col} onHandleClick={onHandleCellClick} />)}
+                  {row.map(({ status, row, col }) => <Cell key={"" + row + col} status={status} row={row} col={col} onHandleClick={onHandleCellClick} onMouseOver={onHandleMouseOver} />)}
                 </div>
               })
             }
