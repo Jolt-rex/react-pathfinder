@@ -9,9 +9,9 @@ function Pathfinder({ width, height }) {
   const [goal, setGoal] = useState(null);
   const [algorithm, setAlgorithm] = useState(null);
   const [action, setAction] = useState('');
-  const [path, setPath] = useState([]);
+  const [running, setRunning] = useState(false);
 
-
+  let renderDelay = 1000;
   
   useEffect(() => {
     console.log('Use effect called');
@@ -24,14 +24,13 @@ function Pathfinder({ width, height }) {
 
     for (let row = 0; row < height; row++) {
       for (let col = 0; col < width; col++) {
-        newGrid[row][col] = { status: 'empty', visited: false, row, col };
+        newGrid[row][col] = { status: 'empty', visited: false, path: false, row, col };
       }
     }
 
     setStart(null);
     setGoal(null);
     setAlgorithm(null);
-    setPath([]);
     setGrid(newGrid);
   }
 
@@ -80,37 +79,35 @@ function Pathfinder({ width, height }) {
   // A* algorithm
   function aStar() {
     let openList = [];
+    const path = [];
     let g = 0;
     let h = heuristic(start.row, start.col);
 
     openList = addToOpen(start.row, start.col, g, h, openList);
     while (openList.length > 0) {
-      //console.log('Before sort');
-      //console.log(JSON.parse(JSON.stringify(openList)));
-      openList.sort((a, b) => b[4] - a[4]);
-      //console.log('After sort');
-      //console.log(JSON.parse(JSON.stringify(openList)));
-      
       const currentCell = openList.pop();
       const row = currentCell[0];
       const col = currentCell[1];
-      // const newGrid = [...grid];
-      // newGrid[row][col].status += ' path';
-      // setGrid(newGrid);
-
-      const newPath = [...path];
-      newPath.push({ row, col });
-      setPath(newPath);
-
+      
+      path.push({ row, col });
+      
       // check if we are at the goal node
       if (row === goal.row && col === goal.col) {
+        showPath(path);
         return;
       }
-
       openList = expandNeighbours(currentCell, openList);
+      openList.sort((a, b) => b[4] - a[4]);    
     }
-
     console.log('Goal not reached');
+  }
+
+  function showPath(path) {
+    const newGrid = [...grid];
+    for (let i = 0; i < path.length; i++)
+      newGrid[path[i].row][path[i].col].path = true;
+    
+    setGrid(newGrid);
   }
 
   function expandNeighbours(currentCell, openList) {
@@ -119,10 +116,13 @@ function Pathfinder({ width, height }) {
     const g = currentCell[2];
     
     // helper array to obtain co-ordinates of neighbouring cells
-    const directionalDeltas = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+    const crossDeltas = [[-1, 0], [0, -1], [1, 0], [0, 1]];
+    const diagonalDeltas = [[-1, -1], [-1, 1], [1, 1], [1, -1]];
+
+    const directionalDeltas = [...crossDeltas, ...diagonalDeltas];
     
     // loop through cell's potential neighbours, up, down, left, right
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < directionalDeltas.length; i++) {
       const row2 = row + directionalDeltas[i][0];
       const col2 = col + directionalDeltas[i][1];
 
@@ -141,7 +141,7 @@ function Pathfinder({ width, height }) {
     const rowOnBoard = (row >= 0 && row < grid.length);
     const colOnBoard = (col >= 0 && col < grid[0].length);
     if (rowOnBoard && colOnBoard)
-      return grid[row][col] !== 'block' && !grid[row][col].visited;
+      return grid[row][col].status !== 'block' && !grid[row][col].visited;
   
     return false;
   }
@@ -158,7 +158,6 @@ function Pathfinder({ width, height }) {
 
   function addToOpen(row, col, g, h, openList) {
     openList.push([row, col, g, h, g + h]);
-    // console.log(JSON.parse(JSON.stringify(openList)))
     const newGrid = [...grid];
     newGrid[row][col].visited = true;
     setGrid(newGrid);
@@ -171,16 +170,16 @@ function Pathfinder({ width, height }) {
   return ( 
     <div className='pathfinder-container'>
       <div className="grid">
-        <button className='btn btn-primary' onClick={() => setAction('start')}>Set Start</button>
-        <button className='btn btn-primary' onClick={() => setAction('goal')}>Set Goal</button>
-        <button className='btn btn-primary' onClick={() => setAction('block')}>Set Block</button>
-        <Dropdown label={algorithm ? algorithm.label : 'Algorithm'} handleClick={(algo) => setAlgorithm(algo)}/>
+        <button className={'btn btn-primary' + (running ? ' disabled' : '')} onClick={() => setAction('start')}>Set Start</button>
+        <button className={'btn btn-primary' + (running ? ' disabled' : '')} onClick={() => setAction('goal')}>Set Goal</button>
+        <button className={'btn btn-primary' + (running ? ' disabled' : '')} onClick={() => setAction('block')}>Set Block</button>
+        <Dropdown className={running ? ' disabled' : ''} label={algorithm ? algorithm.label : 'Algorithm'} handleClick={(algo) => setAlgorithm(algo)}/>
         <button className='btn btn-warning' onClick={resetGrid}>Reset</button>
-        <button className={'btn btn-success' + (start && goal && algorithm ? '' : ' disabled')} onClick={execute}>Execute</button>
+        <button className={'btn btn-success' + (start && goal && algorithm && !running ? '' : ' disabled')} onClick={execute}>Execute</button>
             {grid !== [] &&
               grid.map(row => {
                 return <div key={row[0].row} className="row">
-                  {row.map(({ status, visited, row, col }) => <Cell key={"" + row + col} status={status} visited={visited} row={row} col={col} onHandleClick={onHandleCellClick} onMouseOver={onHandleMouseOver} />)}
+                  {row.map(({ status, visited, path, row, col }) => <Cell key={"" + row + col} status={status} visited={visited} path={path} row={row} col={col} onHandleClick={onHandleCellClick} onMouseOver={onHandleMouseOver} />)}
                 </div>
               })
             }
