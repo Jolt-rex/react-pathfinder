@@ -21,3 +21,11 @@
 .block {
   background-color: black;
 }
+
+.visited {
+  background-color: aqua;
+}
+
+.path {
+  background-color: yellow;
+}

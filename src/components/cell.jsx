@@ -3,7 +3,7 @@ import './cell.css';
 import TargetSVG from '../assets/target.svg';
 import RocketSVG from '../assets/rocket.svg';
 
-const Cell = ({ status, row, col, onHandleClick, onMouseOver }) => {
+const Cell = ({ status, visited, row, col, onHandleClick, onMouseOver }) => {
 
   function handleClick(e) {
     e.preventDefault();
@@ -18,9 +18,9 @@ const Cell = ({ status, row, col, onHandleClick, onMouseOver }) => {
   }
 
   return ( 
-    <div className={'cell ' + status} row={row} col={col} onMouseDown={handleClick} onMouseEnter={handleMouseOver} >
-      {status === 'goal' && <img className='cell-content' src={TargetSVG} alt='Goal' />}
-      {status === 'start' && <img className='cell-content' src={RocketSVG} alt='Goal' />}
+    <div className={'cell ' + status + (visited ? ' visited' : '')} row={row} col={col} onMouseDown={handleClick} onMouseEnter={handleMouseOver} >
+      {status.startsWith('goal') && <img className='cell-content' src={TargetSVG} alt='Goal' />}
+      {status.startsWith('start') && <img className='cell-content' src={RocketSVG} alt='Start' />}
     </div>
   );
 }
