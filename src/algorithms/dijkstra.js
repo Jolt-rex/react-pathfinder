@@ -1,3 +1,5 @@
+const INFINITY = 1000000;
+
 export default function dijkstra(grid, start, goal) {
   const path = [];
   let visitedCells = [];
@@ -5,7 +7,7 @@ export default function dijkstra(grid, start, goal) {
   // make all cells a distance of relatively infinity
   for (let rowIndex = 0; rowIndex < grid.length; rowIndex++)
     for (let colIndex = 0; colIndex < grid[0].length; colIndex++)
-      grid[rowIndex][colIndex].distance = 1000000;
+      grid[rowIndex][colIndex].distance = INFINITY;
 
   // start node a distance of 0
   grid[start.row][start.col].distance = 0;
@@ -13,7 +15,16 @@ export default function dijkstra(grid, start, goal) {
   let current = start;
 
   while (true) {
-    [grid, current, visitedCells] = expandNeighbours(grid, current);
+    const unvisitedNeighbours = getUnvisitedNeighbours(grid, current);
+    [grid, visitedCells] = expandNeighbours(
+      grid,
+      grid[current.row][current.col].distance,
+      unvisitedNeighbours,
+      visitedCells
+    );
+    sortUnvisitedNeighbours(unvisitedNeighbours);
+    grid[current.row][current.col].visited = true;
+    current = unvisitedNeighbours.pop();
 
     // if we have found the goal
     if (grid[goal.row][goal.col].visited) {
@@ -25,13 +36,27 @@ export default function dijkstra(grid, start, goal) {
   }
 }
 
-function expandNeighbours(grid, current, visitedCells) {
-  const row = current[0];
-  const col = current[1];
-  const currentDistance = grid[row][col].distance;
-  let shortestDistanceToNeighbour = 1000000;
-  let closestNeighbour = null;
+function sortUnvisitedNeighbours(unvisitedNeighbours) {
+  unvisitedNeighbours.sort((a, b) => a.distance - b.distance);
+}
 
+function expandNeighbours(
+  grid,
+  currentDistance,
+  unvisitedNeighbours,
+  visitedCells
+) {
+  for (const neighbour of unvisitedNeighbours) {
+    if (currentDistance + 1 < neighbour.distance)
+      grid[neighbour.row][neighbour.col].distance = currentDistance + 1;
+    visitedCells.push(neighbour);
+  }
+  return [grid, visitedCells];
+}
+
+// returns all cells that are neighbours of current cell
+// that are on the board and that have not been visited
+function getUnvisitedNeighbours(grid, current) {
   // helper array to obtain co-ordinates of neighbouring cells
   const crossDeltas = [
     [-1, 0],
@@ -48,32 +73,17 @@ function expandNeighbours(grid, current, visitedCells) {
 
   const directionalDeltas = [...crossDeltas, ...diagonalDeltas];
 
+  const unvisitedNeighbours = [];
+
   // loop through cell's potential neighbours, up, down, left, right, and optionally diagonals
   for (let i = 0; i < directionalDeltas.length; i++) {
-    const row2 = row + directionalDeltas[i][0];
-    const col2 = col + directionalDeltas[i][1];
-
-    // check the new cell coordinates are on the grid and not blocked
-    if (checkValidCell(grid, row2, col2)) {
-      // find distance between current cell, and our neighbour
-      const distanceCurrentToNeighbour = distance(row2, col2, row, col);
-      if (
-        currentDistance + distanceCurrentToNeighbour <
-        grid[row2][col2].distance
-      )
-        grid[row2][col2].distance =
-          currentDistance + distanceCurrentToNeighbour;
-
-      if (distanceCurrentToNeighbour < shortestDistanceToNeighbour) {
-        shortestDistanceToNeighbour = distanceCurrentToNeighbour;
-        closestNeighbour = { row: row2, col: col2 };
-      }
-    }
+    console.log(current);
+    const neighbourRow = current.row + directionalDeltas[i][0];
+    const neighbourCol = current.col + directionalDeltas[i][1];
+    if (checkValidCell(grid, neighbourRow, neighbourCol))
+      unvisitedNeighbours.push({ row: neighbourRow, col: neighbourCol });
   }
-  grid[row][col].visited = true;
-  current = closestNeighbour;
-
-  return [grid, current, visitedCells];
+  return unvisitedNeighbours;
 }
 
 function checkValidCell(grid, row, col) {
