@@ -1,8 +1,16 @@
 
-.grid {
+.grid-container {
+  padding-top: 3em;
   display: inline-block;
 }
 
-button {
+.btn {
   margin: 1em;
+  width: 150px;
+  font-weight: 400;
+}
+
+.input {
+  background-color: #085E7D;
+  display: block;
 }

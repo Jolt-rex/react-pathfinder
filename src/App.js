@@ -1,13 +1,10 @@
 import './App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import Pathfinder from './components/pathfinder';
 
 function App() {
   return (
     <div className="App">
-      <h1 className="heading">Pathfinder</h1>
-      <Pathfinder height={15} width={30} />
+      <Pathfinder height={18} width={40} />
     </div>
   );
 }

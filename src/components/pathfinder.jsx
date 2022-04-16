@@ -102,20 +102,22 @@ function Pathfinder({ width, height }) {
 
   return ( 
     <div className='pathfinder-container'>
-      <div className="grid">
+      <div className='input'>
         <button className={'btn btn-primary' + (running ? ' disabled' : '')} onClick={() => setAction('start')}>Set Start</button>
         <button className={'btn btn-primary' + (running ? ' disabled' : '')} onClick={() => setAction('goal')}>Set Goal</button>
         <button className={'btn btn-primary' + (running ? ' disabled' : '')} onClick={() => setAction('block')}>Set Block</button>
         <Dropdown className={running ? ' disabled' : ''} label={algorithm ? algorithm.label : 'Algorithm'} handleClick={(algo) => setAlgorithm(algo)}/>
-        <button className='btn btn-warning' onClick={resetGrid}>Reset</button>
+        <button className='btn btn-danger' onClick={resetGrid}>Reset</button>
         <button className={'btn btn-success' + (start && goal && algorithm && !running ? '' : ' disabled')} onClick={execute}>Execute</button>
-            {grid !== [] &&
-              grid.map(row => {
-                return <div key={row[0].row} className="row">
-                  {row.map(({ status, visited, path, row, col }) => <Cell key={"" + row + col} status={status} visited={visited} path={path} row={row} col={col} onHandleClick={onHandleCellClick} onMouseOver={onHandleMouseOver} />)}
-                </div>
-              })
-            }
+      </div>
+      <div className='grid-container'>
+        {grid !== [] &&
+          grid.map(row => {
+            return <div key={row[0].row} className="row">
+              {row.map(({ status, visited, path, row, col }) => <Cell key={"" + row + col} status={status} visited={visited} path={path} row={row} col={col} onHandleClick={onHandleCellClick} onMouseOver={onHandleMouseOver} />)}
+            </div>
+          })
+        }
       </div>
     </div>
   );

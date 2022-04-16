@@ -2,10 +2,12 @@
 .cell {
   height: 24px;
   width: 24px;
-  outline: solid 1px #777;
+  outline: solid 1px black;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: 1px;
+  margin-left: 1px;
 }
 
 .cell:hover {
@@ -22,9 +24,9 @@
 }
 
 .visited {
-  background-color: blue;
+  background-color: #084594;
 }
 
 .path {
-  background-color: orange;
+  background-color: #FFD32D;
 }
