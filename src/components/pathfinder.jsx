@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Cell from './cell';
 import Dropdown from './dropdown';
 import aStar from '../algorithms/aStar';
+import dijkstra from '../algorithms/dijkstra';
 import './pathfinder.css';
 
 function Pathfinder({ width, height }) {
@@ -11,6 +12,8 @@ function Pathfinder({ width, height }) {
   const [algorithm, setAlgorithm] = useState(null);
   const [action, setAction] = useState('');
   const [running, setRunning] = useState(false);
+
+  const algorithms = { dijkstra, aStar };
   
   useEffect(() => {
     console.log('Use effect called');
@@ -85,15 +88,16 @@ function Pathfinder({ width, height }) {
   }
 
   function execute() {
-    console.log('Executing');
-    if (algorithm.id === 'aStar') {
-      const [visitedCells, path] = aStar(grid, start, goal);
-      console.log(path);
-      console.log(visitedCells);
+    console.log('Executing', algorithm);
+
+    if (start && goal && algorithm) {
+      const [visitedCells, path] = algorithms[algorithm.id](grid, start, goal);
+      
+      if (path.length === 0)
+        console.log('Could not find node');
 
       renderPath(visitedCells, path);
     }
-
   }
 
   return ( 

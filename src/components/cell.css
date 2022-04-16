@@ -2,7 +2,6 @@
 .cell {
   height: 24px;
   width: 24px;
-  background-color: beige;
   outline: solid 1px #777;
   display: flex;
   align-items: center;
@@ -23,9 +22,9 @@
 }
 
 .visited {
-  background-color: aqua;
+  background-color: blue;
 }
 
 .path {
-  background-color: yellow;
+  background-color: orange;
 }

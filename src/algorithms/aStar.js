@@ -32,7 +32,7 @@ export default function aStar(grid, start, goal) {
     openList.sort((a, b) => b[4] - a[4]);
   }
   // goal not reached
-  return {};
+  return [visitedCells, []];
 }
 
 function expandNeighbours(grid, currentCell, openList, goal, visitedCells) {

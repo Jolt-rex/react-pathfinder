@@ -17,8 +17,8 @@ const Dropdown = ({ label, handleClick }) => {
         {label}
       </button>
       <div className={'dropdown-menu' + (visible ? ' show' : '')} aria-labelledby="dropdownMenuLink">
-        <a className='dropdown-item' id='aStar' label='A*' href='#' onClick={handleOnClick}>A *</a>
-        <a className='dropdown-item' id='dijkstra' label='Dijkstra' href='#' onClick={handleOnClick}>Dijkstra's</a>
+        <a className='dropdown-item' id='aStar' label='A Star' href='#' onClick={handleOnClick}>A Star</a>
+        <a className='dropdown-item' id='dijkstra' label='Dijkstra' href='#' onClick={handleOnClick}>Dijkstra</a>
       </div>
     </div>
    );
