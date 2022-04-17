@@ -30,15 +30,15 @@ export default function dijkstra(grid, start, goal) {
     grid[current.row][current.col].visited = true;
     sortPriorityQue(priorityQue);
 
-    // if we have found the goal
+    // we have found the goal
     if (grid[goal.row][goal.col].visited) {
-      console.log('Goal found');
       const path = findPath(grid, goal);
-      console.log('Path', path);
       return [visitedCells, path];
     }
   }
-  console.log('No cells left in priority que');
+  // if we get here, the goal could not be located
+  // return with the cells we visited and empty path
+  return [visitedCells, []];
 }
 
 function findPath(grid, goal) {
@@ -79,6 +79,7 @@ function expandNeighbours(
 
 // returns all cells that are neighbours of current cell
 // that are on the board and that have not been visited or blocked
+// does not modify grid
 function getUnvisitedNeighbours(grid, current) {
   // helper array to obtain co-ordinates of neighbouring cells
   const crossDeltas = [
@@ -102,8 +103,9 @@ function getUnvisitedNeighbours(grid, current) {
     const neighbourRow = current.row + directionalDeltas[i][0];
     const neighbourCol = current.col + directionalDeltas[i][1];
     if (checkValidCell(grid, neighbourRow, neighbourCol)) {
-      const isDiagonal = !(neighbourRow === 0 || neighbourCol === 0);
-      const newNeighbour = { ...grid[neighbourRow][neighbourCol], isDiagonal };
+      const newNeighbour = { ...grid[neighbourRow][neighbourCol] };
+      newNeighbour.isDiagonal =
+        directionalDeltas[i][0] !== 0 && directionalDeltas[i][1] !== 0;
       unvisitedNeighbours.push(newNeighbour);
     }
   }
