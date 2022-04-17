@@ -1,7 +1,7 @@
 const INFINITY = 1000000;
 
 export default function dijkstra(grid, start, goal) {
-  const path = [];
+  let priorityQue = [];
   let visitedCells = [];
 
   // make all cells a distance of relatively infinity
@@ -9,53 +9,73 @@ export default function dijkstra(grid, start, goal) {
     for (let colIndex = 0; colIndex < grid[0].length; colIndex++)
       grid[rowIndex][colIndex].distance = INFINITY;
 
-  // start node a distance of 0
+  // start node a distance of 0 and push it to the que
   grid[start.row][start.col].distance = 0;
+  let current = grid[start.row][start.col];
+  priorityQue.push(current);
 
-  let current = start;
+  while (priorityQue.length > 0) {
+    current = priorityQue.pop();
 
-  while (true) {
     const unvisitedNeighbours = getUnvisitedNeighbours(grid, current);
-    [grid, visitedCells] = expandNeighbours(
+
+    [grid, priorityQue, visitedCells] = expandNeighbours(
       grid,
-      grid[current.row][current.col].distance,
+      priorityQue,
+      current,
       unvisitedNeighbours,
       visitedCells
     );
-    sortUnvisitedNeighbours(unvisitedNeighbours);
+
     grid[current.row][current.col].visited = true;
-    current = unvisitedNeighbours.pop();
+    sortPriorityQue(priorityQue);
 
     // if we have found the goal
     if (grid[goal.row][goal.col].visited) {
+      console.log('Goal found');
+      const path = findPath(grid, goal);
+      console.log('Path', path);
       return [visitedCells, path];
     }
-
-    // if current is null, we have not found another cell with distance less than infinity
-    if (current === null) return [[], []];
   }
+  console.log('No cells left in priority que');
 }
 
-function sortUnvisitedNeighbours(unvisitedNeighbours) {
-  unvisitedNeighbours.sort((a, b) => a.distance - b.distance);
+function findPath(grid, goal) {
+  const path = [];
+  let current = goal;
+  while (current.status !== 'start') {
+    path.push(current);
+    current = grid[current.row][current.col].previous;
+  }
+
+  return path;
+}
+
+function sortPriorityQue(priorityQue) {
+  priorityQue.sort((a, b) => b.distance - a.distance);
 }
 
 function expandNeighbours(
   grid,
-  currentDistance,
+  priorityQue,
+  current,
   unvisitedNeighbours,
   visitedCells
 ) {
   for (const neighbour of unvisitedNeighbours) {
-    if (currentDistance + 1 < neighbour.distance)
-      grid[neighbour.row][neighbour.col].distance = currentDistance + 1;
+    if (current.distance + 1 < neighbour.distance) {
+      grid[neighbour.row][neighbour.col].distance = current.distance + 1;
+      grid[neighbour.row][neighbour.col].previous = current;
+      priorityQue.push(grid[neighbour.row][neighbour.col]);
+    }
     visitedCells.push(neighbour);
   }
-  return [grid, visitedCells];
+  return [grid, priorityQue, visitedCells];
 }
 
 // returns all cells that are neighbours of current cell
-// that are on the board and that have not been visited
+// that are on the board and that have not been visited or blocked
 function getUnvisitedNeighbours(grid, current) {
   // helper array to obtain co-ordinates of neighbouring cells
   const crossDeltas = [
@@ -77,11 +97,10 @@ function getUnvisitedNeighbours(grid, current) {
 
   // loop through cell's potential neighbours, up, down, left, right, and optionally diagonals
   for (let i = 0; i < directionalDeltas.length; i++) {
-    console.log(current);
     const neighbourRow = current.row + directionalDeltas[i][0];
     const neighbourCol = current.col + directionalDeltas[i][1];
     if (checkValidCell(grid, neighbourRow, neighbourCol))
-      unvisitedNeighbours.push({ row: neighbourRow, col: neighbourCol });
+      unvisitedNeighbours.push(grid[neighbourRow][neighbourCol]);
   }
   return unvisitedNeighbours;
 }
@@ -93,14 +112,4 @@ function checkValidCell(grid, row, col) {
     return grid[row][col].status !== 'block' && !grid[row][col].visited;
 
   return false;
-}
-
-// calculates distance between two cells - given cell to goal cell
-function distance(row1, col1, row2, col2) {
-  const rowPowerTwo = Math.pow(Math.abs(row2 - row1), 2);
-  const colPowerTwo = Math.pow(Math.abs(col2 - col1), 2);
-  return Math.sqrt(rowPowerTwo + colPowerTwo);
-
-  // Manhattan distance
-  //return Math.abs(row2 - row1) + Math.abs(col2 - col1);
 }
