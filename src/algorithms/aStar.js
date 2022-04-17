@@ -28,6 +28,8 @@ export default function aStar(grid, start, goal) {
       visitedCells
     );
     openList.sort((a, b) => b[4] - a[4]);
+
+    console.log(openList);
   }
   // goal not reached
   return [visitedCells, []];
@@ -35,46 +37,50 @@ export default function aStar(grid, start, goal) {
 
 function findPath(grid, goal) {
   const path = [];
-  let current = goal;
+  let current = grid[goal.row][goal.col];
   while (true) {
+    console.log(current);
     path.push(current);
     if (current.status === 'start') break;
-    current = grid[current.row][current.col].previous;
+    current = grid[current.previous[0]][current.previous[1]];
   }
-  console.log(path);
   return path;
 }
 
 function inOpenList(openList, cell) {
   for (const cellInOpenList in openList)
-    if (cellInOpenList.row === cell.row && cellInOpenList.col === cell.col)
+    if (cellInOpenList[0] === cell.row && cellInOpenList[1] === cell.col)
       return true;
 
   return false;
 }
 
-function expandNeighbours(grid, current, openList, goal, visitedCells) {
-  const { row, col, g } = current;
-
-  // helper array to obtain co-ordinates of neighbouring cells
-  const crossDeltas = [
+// helper array to obtain co-ordinates of neighbouring cells
+function getCrossDeltas() {
+  return [
     [-1, 0],
     [0, -1],
     [1, 0],
     [0, 1],
   ];
+}
 
-  // optional to allow diagonal travel
-  const diagonalDeltas = [
+// optional to allow diagonal travel
+function getDiagonalDeltas() {
+  return [
     [-1, -1],
     [-1, 1],
     [1, 1],
     [1, -1],
   ];
+}
 
-  const directionalDeltas = [...crossDeltas, ...diagonalDeltas];
+function expandNeighbours(grid, current, openList, goal, visitedCells) {
+  const [row, col, g] = current;
+  const directionalDeltas = [...getCrossDeltas(), ...getDiagonalDeltas()];
 
   // loop through cell's potential neighbours, up, down, left, right
+  // and diagonals if selected
   for (let i = 0; i < directionalDeltas.length; i++) {
     const row2 = row + directionalDeltas[i][0];
     const col2 = col + directionalDeltas[i][1];
@@ -88,14 +94,18 @@ function expandNeighbours(grid, current, openList, goal, visitedCells) {
 
       // if the cell is already in the open list
       if (inOpenList(openList, { row2, col2 })) {
+        console.log('In open list');
         // and if the cell has a lower g score than passing through
         // the current node, then ignore this neighbour
-        if (grid[row2][col2].g < g + distanceToCurrent) continue;
+        if (grid[row2][col2].g < g + distanceToCurrent) {
+          console.log(grid[row2][col2], g + distanceToCurrent);
+          continue;
+        }
       }
 
       const gNeighbour = g + distanceToCurrent;
       const hNeighbour = heuristic(row2, col2, goal.row, goal.col);
-      grid[row2][col2].parent = current;
+      grid[row2][col2].previous = current;
       grid[row2][col2].g = gNeighbour;
 
       openList.push([
@@ -105,6 +115,7 @@ function expandNeighbours(grid, current, openList, goal, visitedCells) {
         hNeighbour,
         gNeighbour + hNeighbour,
       ]);
+
       grid[row2][col2].visited = true;
       visitedCells.push({ row: row2, col: col2 });
     }
