@@ -44,8 +44,9 @@ export default function dijkstra(grid, start, goal) {
 function findPath(grid, goal) {
   const path = [];
   let current = goal;
-  while (current.status !== 'start') {
+  while (true) {
     path.push(current);
+    if (current.status === 'start') break;
     current = grid[current.row][current.col].previous;
   }
 
@@ -64,8 +65,10 @@ function expandNeighbours(
   visitedCells
 ) {
   for (const neighbour of unvisitedNeighbours) {
-    if (current.distance + 1 < neighbour.distance) {
-      grid[neighbour.row][neighbour.col].distance = current.distance + 1;
+    const distanceToCurrent = neighbour.isDiagonal ? 1.4 : 1;
+    if (current.distance + distanceToCurrent < neighbour.distance) {
+      grid[neighbour.row][neighbour.col].distance =
+        current.distance + distanceToCurrent;
       grid[neighbour.row][neighbour.col].previous = current;
       priorityQue.push(grid[neighbour.row][neighbour.col]);
     }
@@ -90,7 +93,6 @@ function getUnvisitedNeighbours(grid, current) {
     [1, 1],
     [1, -1],
   ];
-
   const directionalDeltas = [...crossDeltas, ...diagonalDeltas];
 
   const unvisitedNeighbours = [];
@@ -99,8 +101,11 @@ function getUnvisitedNeighbours(grid, current) {
   for (let i = 0; i < directionalDeltas.length; i++) {
     const neighbourRow = current.row + directionalDeltas[i][0];
     const neighbourCol = current.col + directionalDeltas[i][1];
-    if (checkValidCell(grid, neighbourRow, neighbourCol))
-      unvisitedNeighbours.push(grid[neighbourRow][neighbourCol]);
+    if (checkValidCell(grid, neighbourRow, neighbourCol)) {
+      const isDiagonal = !(neighbourRow === 0 || neighbourCol === 0);
+      const newNeighbour = { ...grid[neighbourRow][neighbourCol], isDiagonal };
+      unvisitedNeighbours.push(newNeighbour);
+    }
   }
   return unvisitedNeighbours;
 }
