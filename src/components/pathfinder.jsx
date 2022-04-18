@@ -9,6 +9,8 @@ function Pathfinder({ width, height }) {
   const [grid, setGrid] = useState([]);
   const [start, setStart] = useState(null);
   const [goal, setGoal] = useState(null);
+  const [visited, setVisited] = useState([]);
+  const [path, setPath] = useState([]);
   const [algorithm, setAlgorithm] = useState(null);
   const [action, setAction] = useState('');
   const [running, setRunning] = useState(false);
@@ -31,9 +33,22 @@ function Pathfinder({ width, height }) {
       }
     }
 
+    setGrid(newGrid);
     setStart(null);
     setGoal(null);
+    setPath([]);
+    setVisited([]);
     setAlgorithm(null);
+    setRunning(false);
+    setHasRun(false);
+  }
+
+  function clearPath() {
+    const newGrid = [...grid];
+    setVisited([]);
+    setPath([]);
+    visited.forEach(({ row, col }) => { newGrid[row][col].visited = false });
+    path.forEach(({ row, col }) => { newGrid[row][col].path = false });
     setGrid(newGrid);
   }
 
@@ -74,30 +89,52 @@ function Pathfinder({ width, height }) {
     setGrid(newGrid);
   }
 
-  async function animateCells(cells, stateToSet) {
+  async function animateCells(cells, stateToSet, quick=false) {
     // update the document directly to avoid performace issues
     // with re-rendering DOM multiple times
     const newGrid = [...grid];
     for (let i = 0; i < cells.length; i++) {
       const cell = document.getElementById(`r-${cells[i].row}-c-${cells[i].col}`);
       cell.className = `${cell.className} ${stateToSet}`
-      await new Promise(resolve => { setTimeout(() => resolve(), 5) });
+      await new Promise(resolve => { setTimeout(() => resolve(), 20) });
+    
       newGrid[cells[i].row][cells[i].col][stateToSet] = true;
     }
-
     // now update the DOM grid
     setGrid(newGrid);
   }
 
-  async function renderPath(visitedCells, path) {
+  async function renderPath(visitedCells, pathCells) {
     await animateCells(visitedCells, 'visited');
-    await animateCells(path, 'path');
+    await animateCells(pathCells, 'path');
+    setHasRun(true);
+    setRunning(false);
+  }
+
+  function quickRender(visited, path) {
+    animateCells(visited, 'visited', true);
+    animateCells(path, 'path', true);
   }
 
   function execute() {
-    if (start && goal && algorithm) {
-      const [visitedCells, path] = algorithms[algorithm.id](grid, start, goal);
-      renderPath(visitedCells, path);
+    if (!start || !goal || !algorithm) return;
+    setRunning(true);
+    
+    const [visitedCells, pathCells] = algorithms[algorithm.id](grid, start, goal);
+    console.log(visitedCells);
+    console.log(pathCells);
+    setVisited(visitedCells);
+    setPath(pathCells);
+
+    renderPath(visitedCells, pathCells);
+  }
+
+  function handleChangeAlgorithm(algorithm) {
+    setAlgorithm(algorithm);
+    // if we have already run, run again with changed algirithm
+    if (hasRun) {
+      clearPath();
+      execute();
     }
   }
 
@@ -107,8 +144,8 @@ function Pathfinder({ width, height }) {
         <button className={'btn btn-primary' + (running ? ' disabled' : '')} onClick={() => setAction('start')}>Set Start</button>
         <button className={'btn btn-primary' + (running ? ' disabled' : '')} onClick={() => setAction('goal')}>Set Goal</button>
         <button className={'btn btn-primary' + (running ? ' disabled' : '')} onClick={() => setAction('block')}>Set Block</button>
-        <Dropdown className={running ? ' disabled' : ''} label={algorithm ? algorithm.label : 'Algorithm'} handleClick={(algo) => setAlgorithm(algo)}/>
-        <button className='btn btn-danger' onClick={resetGrid}>Reset</button>
+        <Dropdown className={running ? ' disabled' : ''} label={algorithm ? algorithm.label : 'Algorithm'} handleClick={handleChangeAlgorithm}/>
+        <button className={'btn btn-danger' + (running ? ' disabled' : '')} onClick={resetGrid}>Reset</button>
         <button className={'btn btn-success' + (start && goal && algorithm && !running ? '' : ' disabled')} onClick={execute}>Execute</button>
       </div>
       <div className='grid-container'>

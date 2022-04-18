@@ -61,9 +61,9 @@ function findPath(grid, goal) {
 }
 
 // check if co-ordinates are in the priorityQue array
-function inOpenList(priorityQue, row, col) {
-  for (const cellInOpenList of priorityQue)
-    if (cellInOpenList[0] === row && cellInOpenList[1] === col) return true;
+function inPriorityQue(priorityQue, row, col) {
+  for (const cellInQue of priorityQue)
+    if (cellInQue[0] === row && cellInQue[1] === col) return true;
 
   return false;
 }
@@ -92,7 +92,11 @@ function expandNeighbours(grid, current, priorityQue, goal, visitedCells) {
 
     // check the new cell coordinates are on the grid and not blocked
     if (checkValidCell(grid, rowNeighbour, colNeighbour)) {
-      const isInOpenList = inOpenList(priorityQue, rowNeighbour, colNeighbour);
+      const isInOpenList = inPriorityQue(
+        priorityQue,
+        rowNeighbour,
+        colNeighbour
+      );
       if (isInOpenList) {
         // if the cell already has a lower g score than passing through
         // the current node, then ignore this neighbour, otherwise we will

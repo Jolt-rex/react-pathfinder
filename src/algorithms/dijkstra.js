@@ -15,7 +15,6 @@
 export default function dijkstra(grid, start, goal) {
   // visited cells is passed back to caller, only for rendering
   // which cells have been visited, does not contribute to algorithm
-  let visitedCells = [];
 
   const INFINITY = 100000;
   // make all cells a distance of relatively infinity
@@ -26,8 +25,10 @@ export default function dijkstra(grid, start, goal) {
   // start node at distance of 0 and push it to the que
   grid[start.row][start.col].distance = 0;
   let current = grid[start.row][start.col];
+  let visitedCells = [];
   let priorityQue = [];
   priorityQue.push(current);
+  visitedCells.push({ row: current.row, col: current.col });
 
   while (priorityQue.length > 0) {
     current = priorityQue.pop();
@@ -62,11 +63,20 @@ function findPath(grid, goal) {
   const path = [];
   let current = goal;
   while (true) {
-    path.push(current);
+    let { row, col } = current;
+    path.push({ row, col });
     if (current.status === 'start') break;
-    current = grid[current.row][current.col].previous;
+    current = grid[row][col].previous;
   }
   return path;
+}
+
+// check if co-ordinates are in the priorityQue array
+function inPriorityQue(priorityQue, row, col) {
+  for (const cellInQue of priorityQue)
+    if (cellInQue[0] === row && cellInQue[1] === col) return true;
+
+  return false;
 }
 
 // sort que based on distance, the lowest distance at the top
@@ -86,12 +96,15 @@ function expandNeighbours(
   visitedCells
 ) {
   for (const neighbour of unvisitedNeighbours) {
-    if (current.distance + 1 < neighbour.distance) {
-      grid[neighbour.row][neighbour.col].distance = current.distance + 1;
-      grid[neighbour.row][neighbour.col].previous = current;
-      priorityQue.push(grid[neighbour.row][neighbour.col]);
+    const { row, col, distance } = neighbour;
+    if (current.distance + 1 < distance) {
+      grid[row][col].distance = current.distance + 1;
+      grid[row][col].previous = current;
+      if (!inPriorityQue(priorityQue, row, col)) {
+        priorityQue.push(grid[row][col]);
+        visitedCells.push({ row, col });
+      }
     }
-    visitedCells.push(neighbour);
   }
   return [grid, priorityQue, visitedCells];
 }
@@ -113,7 +126,7 @@ function getUnvisitedNeighbours(grid, current) {
   const directionalDeltas = getDirectionalDeltas();
 
   const unvisitedNeighbours = [];
-  // loop through cell's potential neighbours, up, down, left, right, and optionally diagonals
+  // loop through cell's potential neighbours, up, down, left, right
   for (let i = 0; i < directionalDeltas.length; i++) {
     const neighbourRow = current.row + directionalDeltas[i][0];
     const neighbourCol = current.col + directionalDeltas[i][1];
