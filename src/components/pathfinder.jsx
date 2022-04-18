@@ -74,17 +74,24 @@ function Pathfinder({ width, height }) {
     setGrid(newGrid);
   }
 
-  function animateCells(cells, stateToSet) {
+  async function animateCells(cells, stateToSet) {
+    // update the document directly to avoid performace issues
+    // with re-rendering DOM multiple times
+    const newGrid = [...grid];
     for (let i = 0; i < cells.length; i++) {
-      const newGrid = [...grid];
+      const cell = document.getElementById(`r-${cells[i].row}-c-${cells[i].col}`);
+      cell.className = `${cell.className} ${stateToSet}`
+      await new Promise(resolve => { setTimeout(() => resolve(), 5) });
       newGrid[cells[i].row][cells[i].col][stateToSet] = true;
-      setGrid(newGrid);
     }
+
+    // now update the DOM grid
+    setGrid(newGrid);
   }
 
-  function renderPath(visitedCells, path) {
-    animateCells(visitedCells, 'visited');
-    animateCells(path, 'path');
+  async function renderPath(visitedCells, path) {
+    await animateCells(visitedCells, 'visited');
+    await animateCells(path, 'path');
   }
 
   function execute() {
@@ -108,7 +115,7 @@ function Pathfinder({ width, height }) {
         {grid !== [] &&
           grid.map(row => {
             return <div key={row[0].row} className="row">
-              {row.map(({ status, visited, path, row, col }) => <Cell key={"" + row + col} status={status} visited={visited} path={path} row={row} col={col} onHandleClick={onHandleCellClick} onMouseOver={onHandleMouseOver} />)}
+              {row.map(({ status, visited, path, row, col }) => <Cell key={`${row} ${col}`} id={`r-${row}-c-${col}`} status={status} visited={visited} path={path} row={row} col={col} onHandleClick={onHandleCellClick} onMouseOver={onHandleMouseOver} />)}
             </div>
           })
         }
