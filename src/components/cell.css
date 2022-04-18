@@ -20,7 +20,8 @@
 }
 
 .block {
-  background-color: black;
+  animation: animate-block 0.2s;
+  animation-fill-mode: forwards;
 }
 
 .visited {
@@ -29,4 +30,8 @@
 
 .path {
   background-color: #FFD32D;
+}
+
+@keyframes animate-block {
+  to {background-color: black;}
 }

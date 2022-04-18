@@ -12,6 +12,7 @@ function Pathfinder({ width, height }) {
   const [algorithm, setAlgorithm] = useState(null);
   const [action, setAction] = useState('');
   const [running, setRunning] = useState(false);
+  const [hasRun, setHasRun] = useState(false);
 
   const algorithms = { dijkstra, aStar };
   
@@ -73,29 +74,22 @@ function Pathfinder({ width, height }) {
     setGrid(newGrid);
   }
 
-  function renderPath(visitedCells, path) {
-    for (let i = 0; i < visitedCells.length; i++) {
+  function animateCells(cells, stateToSet) {
+    for (let i = 0; i < cells.length; i++) {
       const newGrid = [...grid];
-      newGrid[visitedCells[i].row][visitedCells[i].col].visited = true;
-      setGrid(newGrid)
-    }
-
-    for (let j = 0; j < path.length; j++) {
-      const newGrid = [...grid];
-      newGrid[path[j].row][path[j].col].path = true;
+      newGrid[cells[i].row][cells[i].col][stateToSet] = true;
       setGrid(newGrid);
     }
   }
 
-  function execute() {
-    console.log('Executing', algorithm);
+  function renderPath(visitedCells, path) {
+    animateCells(visitedCells, 'visited');
+    animateCells(path, 'path');
+  }
 
+  function execute() {
     if (start && goal && algorithm) {
       const [visitedCells, path] = algorithms[algorithm.id](grid, start, goal);
-      
-      if (path.length === 0)
-        console.log('Could not find node');
-
       renderPath(visitedCells, path);
     }
   }
