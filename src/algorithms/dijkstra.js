@@ -1,22 +1,36 @@
-const INFINITY = 1000000;
+// Dijkstra algorithm
+// Make all cells a distance value of infinity, except start which is 0
+// Works by exploring cells in four directions, up down left right
+// from current cell, and adding cells to a priorityQue
+// the priorityQue is then sorted based on the distance value which
+// is the distnace from the start cell
+// the cell with the lowest distance value is popped of the top and becomes
+// the current node, and the process is repeated until we find the goal
+// the current node is marked as visited and not visited again
+// the algorithm is not given the location of the goal, until we find it
 
+// returns [visitedCells, path] as array
+// visitedCells is a array of all cells visited in order
+// path is an array of cells from goal -> start
 export default function dijkstra(grid, start, goal) {
-  let priorityQue = [];
+  // visited cells is passed back to caller, only for rendering
+  // which cells have been visited, does not contribute to algorithm
   let visitedCells = [];
 
+  const INFINITY = 100000;
   // make all cells a distance of relatively infinity
   for (let rowIndex = 0; rowIndex < grid.length; rowIndex++)
     for (let colIndex = 0; colIndex < grid[0].length; colIndex++)
       grid[rowIndex][colIndex].distance = INFINITY;
 
-  // start node a distance of 0 and push it to the que
+  // start node at distance of 0 and push it to the que
   grid[start.row][start.col].distance = 0;
   let current = grid[start.row][start.col];
+  let priorityQue = [];
   priorityQue.push(current);
 
   while (priorityQue.length > 0) {
     current = priorityQue.pop();
-    console.log(current.row, current.col);
 
     const unvisitedNeighbours = getUnvisitedNeighbours(grid, current);
 
@@ -37,11 +51,13 @@ export default function dijkstra(grid, start, goal) {
       return [visitedCells, path];
     }
   }
-  // if we get here, the goal could not be located
+  // if we get here, the goal could not be reached
   // return with the cells we visited and empty path
   return [visitedCells, []];
 }
 
+// finds the path once goal is reached, by traversing
+// from goal backwards to start
 function findPath(grid, goal) {
   const path = [];
   let current = goal;
@@ -50,14 +66,18 @@ function findPath(grid, goal) {
     if (current.status === 'start') break;
     current = grid[current.row][current.col].previous;
   }
-
   return path;
 }
 
+// sort que based on distance, the lowest distance at the top
 function sortPriorityQue(priorityQue) {
   priorityQue.sort((a, b) => b.distance - a.distance);
 }
 
+// expand the valid neighbours
+// update the distance value, the previous node
+// and push to the que
+// returns modified [grid, priorityQue, visitedCells]
 function expandNeighbours(
   grid,
   priorityQue,
@@ -76,17 +96,21 @@ function expandNeighbours(
   return [grid, priorityQue, visitedCells];
 }
 
-// returns all cells that are neighbours of current cell
-// that are on the board and that have not been visited or blocked
-// does not modify grid
-function getUnvisitedNeighbours(grid, current) {
-  // helper array to obtain co-ordinates of neighbouring cells
-  const directionalDeltas = [
+// helper array to obtain delta co-ordinates of neighbouring cells
+function getDirectionalDeltas() {
+  return [
     [-1, 0],
     [0, -1],
     [1, 0],
     [0, 1],
   ];
+}
+
+// returns all cells that are neighbours of current cell
+// that are on the board and that have not been visited or blocked
+// does not modify grid
+function getUnvisitedNeighbours(grid, current) {
+  const directionalDeltas = getDirectionalDeltas();
 
   const unvisitedNeighbours = [];
   // loop through cell's potential neighbours, up, down, left, right, and optionally diagonals
@@ -101,6 +125,9 @@ function getUnvisitedNeighbours(grid, current) {
   return unvisitedNeighbours;
 }
 
+// check if the cell is on the grid
+// is not blocked and has not been visited
+// returns true or false
 function checkValidCell(grid, row, col) {
   const rowOnBoard = row >= 0 && row < grid.length;
   const colOnBoard = col >= 0 && col < grid[0].length;
@@ -109,3 +136,5 @@ function checkValidCell(grid, row, col) {
 
   return false;
 }
+
+// END DIJKSTRA
