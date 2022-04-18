@@ -16,6 +16,7 @@ export default function dijkstra(grid, start, goal) {
 
   while (priorityQue.length > 0) {
     current = priorityQue.pop();
+    console.log(current.row, current.col);
 
     const unvisitedNeighbours = getUnvisitedNeighbours(grid, current);
 
@@ -65,10 +66,8 @@ function expandNeighbours(
   visitedCells
 ) {
   for (const neighbour of unvisitedNeighbours) {
-    const distanceToCurrent = neighbour.isDiagonal ? 1.4 : 1;
-    if (current.distance + distanceToCurrent < neighbour.distance) {
-      grid[neighbour.row][neighbour.col].distance =
-        current.distance + distanceToCurrent;
+    if (current.distance + 1 < neighbour.distance) {
+      grid[neighbour.row][neighbour.col].distance = current.distance + 1;
       grid[neighbour.row][neighbour.col].previous = current;
       priorityQue.push(grid[neighbour.row][neighbour.col]);
     }
@@ -82,30 +81,20 @@ function expandNeighbours(
 // does not modify grid
 function getUnvisitedNeighbours(grid, current) {
   // helper array to obtain co-ordinates of neighbouring cells
-  const crossDeltas = [
+  const directionalDeltas = [
     [-1, 0],
     [0, -1],
     [1, 0],
     [0, 1],
   ];
-  const diagonalDeltas = [
-    [-1, -1],
-    [-1, 1],
-    [1, 1],
-    [1, -1],
-  ];
-  const directionalDeltas = [...crossDeltas, ...diagonalDeltas];
 
   const unvisitedNeighbours = [];
-
   // loop through cell's potential neighbours, up, down, left, right, and optionally diagonals
   for (let i = 0; i < directionalDeltas.length; i++) {
     const neighbourRow = current.row + directionalDeltas[i][0];
     const neighbourCol = current.col + directionalDeltas[i][1];
     if (checkValidCell(grid, neighbourRow, neighbourCol)) {
       const newNeighbour = { ...grid[neighbourRow][neighbourCol] };
-      newNeighbour.isDiagonal =
-        directionalDeltas[i][0] !== 0 && directionalDeltas[i][1] !== 0;
       unvisitedNeighbours.push(newNeighbour);
     }
   }

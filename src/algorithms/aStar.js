@@ -2,23 +2,15 @@
 export default function aStar(grid, start, goal) {
   let openList = [];
   let visitedCells = [];
-
   let g = 0;
   let h = heuristic(start.row, start.col, goal.row, goal.col);
 
   openList.push([start.row, start.col, g, h, g + h]);
-  grid[start.row][start.col].visited = true;
   visitedCells.push({ row: start.row, col: start.col });
 
   while (openList.length > 0) {
     const current = openList.pop();
     const [row, col] = current;
-
-    // check if we are at the goal node
-    if (row === goal.row && col === goal.col) {
-      const path = findPath(grid, goal);
-      return [visitedCells, path];
-    }
 
     [openList, grid, visitedCells] = expandNeighbours(
       grid,
@@ -27,9 +19,14 @@ export default function aStar(grid, start, goal) {
       goal,
       visitedCells
     );
-    openList.sort((a, b) => b[4] - a[4]);
 
-    console.log(openList);
+    // check if we are at the goal node
+    if (row === goal.row && col === goal.col) {
+      const path = findPath(grid, goal);
+      return [visitedCells, path];
+    }
+
+    openList.sort((a, b) => b[4] - a[4]);
   }
   // goal not reached
   return [visitedCells, []];
@@ -39,7 +36,6 @@ function findPath(grid, goal) {
   const path = [];
   let current = grid[goal.row][goal.col];
   while (true) {
-    console.log(current);
     path.push(current);
     if (current.status === 'start') break;
     current = grid[current.previous[0]][current.previous[1]];
@@ -47,10 +43,9 @@ function findPath(grid, goal) {
   return path;
 }
 
-function inOpenList(openList, cell) {
-  for (const cellInOpenList in openList)
-    if (cellInOpenList[0] === cell.row && cellInOpenList[1] === cell.col)
-      return true;
+function inOpenList(openList, row, col) {
+  for (const cellInOpenList of openList)
+    if (cellInOpenList[0] === row && cellInOpenList[1] === col) return true;
 
   return false;
 }
@@ -65,61 +60,47 @@ function getCrossDeltas() {
   ];
 }
 
-// optional to allow diagonal travel
-function getDiagonalDeltas() {
-  return [
-    [-1, -1],
-    [-1, 1],
-    [1, 1],
-    [1, -1],
-  ];
-}
-
 function expandNeighbours(grid, current, openList, goal, visitedCells) {
   const [row, col, g] = current;
-  const directionalDeltas = [...getCrossDeltas(), ...getDiagonalDeltas()];
+  const directionalDeltas = getCrossDeltas();
 
   // loop through cell's potential neighbours, up, down, left, right
-  // and diagonals if selected
   for (let i = 0; i < directionalDeltas.length; i++) {
     const row2 = row + directionalDeltas[i][0];
     const col2 = col + directionalDeltas[i][1];
 
     // check the new cell coordinates are on the grid and not blocked
     if (checkValidCell(grid, row2, col2)) {
-      const distanceToCurrent =
-        directionalDeltas[i][0] !== 0 && directionalDeltas[i][1] !== 0
-          ? 1.4
-          : 1;
-
       // if the cell is already in the open list
-      if (inOpenList(openList, { row2, col2 })) {
-        console.log('In open list');
+      const isInOpenList = inOpenList(openList, row2, col2);
+      if (isInOpenList) {
         // and if the cell has a lower g score than passing through
         // the current node, then ignore this neighbour
-        if (grid[row2][col2].g < g + distanceToCurrent) {
-          console.log(grid[row2][col2], g + distanceToCurrent);
+        if (grid[row2][col2].g < g + 1) {
           continue;
         }
       }
 
-      const gNeighbour = g + distanceToCurrent;
-      const hNeighbour = heuristic(row2, col2, goal.row, goal.col);
+      const gNeighbour = g + 1;
       grid[row2][col2].previous = current;
       grid[row2][col2].g = gNeighbour;
 
-      openList.push([
-        row2,
-        col2,
-        gNeighbour,
-        hNeighbour,
-        gNeighbour + hNeighbour,
-      ]);
+      if (!isInOpenList) {
+        const hNeighbour = heuristic(row2, col2, goal.row, goal.col);
+        openList.push([
+          row2,
+          col2,
+          gNeighbour,
+          hNeighbour,
+          gNeighbour + hNeighbour,
+        ]);
 
-      grid[row2][col2].visited = true;
-      visitedCells.push({ row: row2, col: col2 });
+        visitedCells.push({ row: row2, col: col2 });
+      }
     }
   }
+  grid[row][col].visited = true;
+
   return [openList, grid, visitedCells];
 }
 
@@ -134,12 +115,13 @@ function checkValidCell(grid, row, col) {
 
 // calculates distance between two cells - given cell -> goal cell
 function heuristic(row1, col1, row2, col2) {
-  const rowPowerTwo = Math.pow(Math.abs(row2 - row1), 2);
-  const colPowerTwo = Math.pow(Math.abs(col2 - col1), 2);
-  return Math.sqrt(rowPowerTwo + colPowerTwo);
+  // Euclidian distance
+  // const rowPowerTwo = Math.pow(Math.abs(row2 - row1), 2);
+  // const colPowerTwo = Math.pow(Math.abs(col2 - col1), 2);
+  // return Math.sqrt(rowPowerTwo + colPowerTwo);
 
   // Manhattan distance
-  //return Math.abs(row2 - row1) + Math.abs(col2 - col1);
+  return Math.abs(row2 - row1) + Math.abs(col2 - col1);
 }
 
 // END A*
